@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
+import time
 
 import gym
 import gym.spaces
@@ -404,6 +405,7 @@ if __name__ == "__main__":
     step_cpt = 0
     total_steps = 0
     actor_steps = 0
+    time_start = time.time()
     df = pd.DataFrame(columns=["total_steps", "average_score",
                                "average_score_rl", "average_score_ea", "best_score"])
     while total_steps < args.max_steps:
@@ -499,3 +501,4 @@ if __name__ == "__main__":
             print(res)
 
         print("Total steps", total_steps)
+        print("Time", int(time.time()-time_start))
