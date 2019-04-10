@@ -334,7 +334,7 @@ if __name__ == "__main__":
 
     # Training parameters
     parser.add_argument('--n_episodes', default=1, type=int)
-    parser.add_argument('--max_steps', default=1000000, type=int)
+    parser.add_argument('--max_steps', default=50000, type=int)
     parser.add_argument('--mem_size', default=1000000, type=int)
     parser.add_argument('--n_noisy', default=0, type=int)
 
@@ -363,6 +363,11 @@ if __name__ == "__main__":
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     max_action = int(env.action_space.high[0])
+
+    # if not os.path.exists("./results_curve"):
+    #     os.makedirs("./results_curve")
+
+    file_name = "_%s" % str(args.seed)
 
     # memory
     memory = Memory(args.mem_size, state_dim, action_dim)
@@ -408,6 +413,8 @@ if __name__ == "__main__":
     time_start = time.time()
     df = pd.DataFrame(columns=["total_steps", "average_score",
                                "average_score_rl", "average_score_ea", "best_score"])
+    evaluations_score = []
+    evaluations_time = []
     while total_steps < args.max_steps:
 
         fitness = []
@@ -467,13 +474,16 @@ if __name__ == "__main__":
 
         # save stuff
         if step_cpt >= args.period:
-
             # evaluate mean actor over several runs. Memory is not filled
             # and steps are not counted
             actor.set_params(es.mu)
             f_mu, _ = evaluate(actor, env, memory=None, n_episodes=args.n_eval,
                                render=args.render)
             prRed('Actor Mu Average Fitness:{}'.format(f_mu))
+            evaluations_score.append(f_mu)
+            evaluations_time.append(int(time.time()-time_start))
+
+
 
             df.to_pickle(args.output + "/log.pkl")
             res = {"total_steps": total_steps,
@@ -502,3 +512,7 @@ if __name__ == "__main__":
 
         print("Total steps", total_steps)
         print("Time", int(time.time()-time_start))
+
+    np.save(args.output + "/%s" % file_name, evaluations_score)
+    np.save(args.output + "/%s" % file_name, evaluations_time)
+
