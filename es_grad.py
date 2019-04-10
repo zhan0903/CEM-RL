@@ -334,7 +334,7 @@ if __name__ == "__main__":
 
     # Training parameters
     parser.add_argument('--n_episodes', default=1, type=int)
-    parser.add_argument('--max_steps', default=30000, type=int)
+    parser.add_argument('--max_steps', default=1000000, type=int)
     parser.add_argument('--mem_size', default=1000000, type=int)
     parser.add_argument('--n_noisy', default=0, type=int)
 
@@ -349,7 +349,7 @@ if __name__ == "__main__":
     parser.add_argument('--save_all_models',
                         dest="save_all_models", action="store_true")
     parser.add_argument('--debug', dest='debug', action='store_true')
-    parser.add_argument('--seed', default=-1, type=int)
+    parser.add_argument('--seed', default=0, type=int)
     parser.add_argument('--render', dest='render', action='store_true')
 
     args = parser.parse_args()
@@ -367,7 +367,9 @@ if __name__ == "__main__":
     # if not os.path.exists("./results_curve"):
     #     os.makedirs("./results_curve")
 
-    file_name = "_%s" % str(args.seed)
+    file_name_score = "score_%s" % str(args.seed)
+    file_name_time = "time_%s" % str(args.seed)
+
 
     # memory
     memory = Memory(args.mem_size, state_dim, action_dim)
@@ -513,6 +515,6 @@ if __name__ == "__main__":
         print("Total steps", total_steps)
         print("Time", int(time.time()-time_start))
 
-    np.save(args.output + "/%s" % file_name, evaluations_score)
-    np.save(args.output + "/%s" % file_name, evaluations_time)
+    np.save(args.output + "/%s" % file_name_score, evaluations_score)
+    np.save(args.output + "/%s" % file_name_time, evaluations_time)
 
