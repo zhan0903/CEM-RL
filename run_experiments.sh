@@ -1,10 +1,8 @@
 #!/bin/bash
-
 # Script to reproduce results
-
 for ((i=0;i<5;i+=1))
-do 
-	python es_grad.py \
+do
+    python es_grad.py \
 	--env "HalfCheetah-v2" \
 	--seed $i \
 	--use_td3 \
