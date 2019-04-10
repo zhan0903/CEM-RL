@@ -334,7 +334,7 @@ if __name__ == "__main__":
 
     # Training parameters
     parser.add_argument('--n_episodes', default=1, type=int)
-    parser.add_argument('--max_steps', default=50000, type=int)
+    parser.add_argument('--max_steps', default=30000, type=int)
     parser.add_argument('--mem_size', default=1000000, type=int)
     parser.add_argument('--n_noisy', default=0, type=int)
 
