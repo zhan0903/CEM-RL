@@ -345,7 +345,7 @@ if __name__ == "__main__":
     # misc
     parser.add_argument('--output', default='results/', type=str)
     parser.add_argument('--period', default=5000, type=int)
-    parser.add_argument('--n_eval', default=10, type=int)
+    parser.add_argument('--n_eval', default=5, type=int)
     parser.add_argument('--save_all_models',
                         dest="save_all_models", action="store_true")
     parser.add_argument('--debug', dest='debug', action='store_true')
