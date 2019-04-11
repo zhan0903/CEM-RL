@@ -111,6 +111,7 @@ class Actor(RLNN):
             x = self.max_action * torch.tanh(self.l3(x))
 
         else:
+            print("come here")
             x = torch.tanh(self.n1(self.l1(x)))
             x = torch.tanh(self.n2(self.l2(x)))
             x = self.max_action * torch.tanh(self.l3(x))
@@ -240,6 +241,7 @@ class CriticTD3(RLNN):
             x1 = self.l3(x1)
 
         else:
+            print("come here in critic")
             x1 = F.leaky_relu(self.n1(self.l1(torch.cat([x, u], 1))))
             x1 = F.leaky_relu(self.n2(self.l2(x1)))
             x1 = self.l3(x1)
