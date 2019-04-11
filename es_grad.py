@@ -485,7 +485,8 @@ if __name__ == "__main__":
             evaluations_score.append(f_mu)
             evaluations_time.append(int(time.time()-time_start))
 
-
+            # np.save(args.output + "/%s" % file_name_score, evaluations_score)
+            # np.save(args.output + "/%s" % file_name_time, evaluations_time)
 
             df.to_pickle(args.output + "/log.pkl")
             res = {"total_steps": total_steps,
