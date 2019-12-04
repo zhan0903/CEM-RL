@@ -41,7 +41,7 @@ def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, re
 
     if not random:
         def policy(state):
-            state = FloatTensor(state.reshape(-1))
+            state = FloatTensor(state.reshape(1, -1)) # -1
             action = actor.select_action(state,_eval=True)
 
             if noise is not None:
