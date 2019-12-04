@@ -83,9 +83,9 @@ def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, re
 
 
 class GaussianPolicy(RLNN):
-    def __init__(self,in_features, hidden_sizes, activation,
+    def __init__(self,state_dim, action_dim, max_action, hidden_sizes, activation,
                 output_activation, action_space):
-        super(GaussianPolicy, self).__init__()
+        super(GaussianPolicy, self).__init__(state_dim, action_dim, max_action)
 
         # self.which_one = 0
 
@@ -94,7 +94,7 @@ class GaussianPolicy(RLNN):
         self.output_activation = output_activation
 
         self.net = MLP(
-            layers=[in_features] + list(hidden_sizes),
+            layers=[state_dim] + list(hidden_sizes),
             activation=activation,
             output_activation=activation)#.to(device)
 
@@ -478,7 +478,7 @@ if __name__ == "__main__":
 
     # actor
     # actor = Actor(state_dim, action_dim, max_action, args)
-    actor = GaussianPolicy(state_dim,(400, 300), torch.relu, None, env.action_space)
+    actor = GaussianPolicy(state_dim, action_dim, max_action,(400, 300), torch.relu, None, env.action_space)
     actor_t = Actor(state_dim, action_dim, max_action, args)
     actor_t.load_state_dict(actor.state_dict())
 

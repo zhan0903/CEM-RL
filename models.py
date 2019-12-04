@@ -16,11 +16,11 @@ else:
 
 class RLNN(nn.Module):
 
-    def __init__(self, state_dim, action_dim, max_action):
+    def __init__(self, state_dim, action_dim, max_action):#state_dim, action_dim, max_action
         super(RLNN, self).__init__()
-        # self.state_dim = state_dim
-        # self.action_dim = action_dim
-        # self.max_action = max_action
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.max_action = max_action
 
     def set_params(self, params):
         """
