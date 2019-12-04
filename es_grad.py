@@ -200,9 +200,9 @@ class GaussianPolicy(RLNN):
 
     def select_action(self,o,_eval=False): # deterministic -- eval
         # if args.evaluate_cpu:
-        # pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)))
+        pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)))
         # else:
-        pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)).to(device))
+        # pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)).to(device))
         return mu.cpu().detach().numpy()[0] if _eval else pi.cpu().detach().numpy()[0]
 
 
@@ -515,7 +515,7 @@ if __name__ == "__main__":
 
     # actor
     # actor = Actor(state_dim, action_dim, max_action, args)
-    actor = GaussianPolicy(state_dim, action_dim, max_action,(400, 300), torch.relu, None, env.action_space).to(device)
+    actor = GaussianPolicy(state_dim, action_dim, max_action,(400, 300), torch.relu, None, env.action_space)#.to(device)
     actor_t = GaussianPolicy(state_dim, action_dim, max_action,(400, 300), torch.relu, None, env.action_space)
     actor_t.load_state_dict(actor.state_dict())
 
