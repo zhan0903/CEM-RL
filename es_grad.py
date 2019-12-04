@@ -82,6 +82,36 @@ def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, re
     return np.mean(scores), steps
 
 
+class MLP(nn.Module):
+    def __init__(self,
+                layers,
+                activation=torch.tanh,
+                output_activation=None,
+                output_scale=1,
+                output_squeeze=False):
+        super(MLP, self).__init__()
+        self.layers = nn.ModuleList()
+        self.activation = activation
+        self.output_activation = output_activation
+        self.output_scale = output_scale
+        self.output_squeeze = output_squeeze
+
+        for i, layer in enumerate(layers[1:]):
+            self.layers.append(nn.Linear(layers[i], layer))
+            nn.init.zeros_(self.layers[i].bias)
+
+    def forward(self, inputs):
+        x = inputs
+        for layer in self.layers[:-1]:
+            x = self.activation(layer(x))
+        if self.output_activation is None:
+            x = self.layers[-1](x) * self.output_scale
+        else:
+            x = self.output_activation(self.layers[-1](x)) * self.output_scale
+        return x.squeeze() if self.output_squeeze else x
+
+
+
 class GaussianPolicy(RLNN):
     def __init__(self,state_dim, action_dim, max_action, hidden_sizes, activation,
                 output_activation, action_space):
