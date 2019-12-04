@@ -200,7 +200,7 @@ class GaussianPolicy(RLNN):
 
     def select_action(self,o,_eval=False): # deterministic -- eval
         # if args.evaluate_cpu:
-        pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)))
+        pi, mu, _ = self.forward(o)
         # else:
         # pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)).to(device))
         return mu.cpu().detach().numpy()[0] if _eval else pi.cpu().detach().numpy()[0]
