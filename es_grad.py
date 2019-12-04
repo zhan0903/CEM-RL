@@ -34,7 +34,7 @@ def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, re
     if not random:
         def policy(state):
             state = FloatTensor(state.reshape(-1))
-            action = actor(state).cpu().data.numpy().flatten()
+            action = actor.select_action(state,_eval=True).cpu().data.numpy().flatten()
 
             if noise is not None:
                 action += noise.sample()
@@ -509,7 +509,7 @@ if __name__ == "__main__":
     # actor
     # actor = Actor(state_dim, action_dim, max_action, args)
     actor = GaussianPolicy(state_dim, action_dim, max_action,(400, 300), torch.relu, None, env.action_space)
-    actor_t = Actor(state_dim, action_dim, max_action, args)
+    actor_t = GaussianPolicy(state_dim, action_dim, max_action,(400, 300), torch.relu, None, env.action_space)
     actor_t.load_state_dict(actor.state_dict())
 
     # action noise
