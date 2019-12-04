@@ -18,6 +18,13 @@ from random_process import GaussianNoise, OrnsteinUhlenbeckProcess
 from memory import Memory
 from util import *
 
+
+LOG_STD_MAX = 2
+LOG_STD_MIN = -20
+EPS = 1e-6
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 USE_CUDA = torch.cuda.is_available()
 if USE_CUDA:
     FloatTensor = torch.cuda.FloatTensor
@@ -193,9 +200,9 @@ class GaussianPolicy(RLNN):
 
     def select_action(self,o,_eval=False): # deterministic -- eval
         # if args.evaluate_cpu:
-        pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)))
+        # pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)))
         # else:
-            # pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)).to(device))
+        pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)).to(device))
         return mu.cpu().detach().numpy()[0] if _eval else pi.cpu().detach().numpy()[0]
 
 
