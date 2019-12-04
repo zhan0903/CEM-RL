@@ -82,6 +82,93 @@ def evaluate(actor, env, memory=None, n_episodes=1, random=False, noise=None, re
     return np.mean(scores), steps
 
 
+class GaussianPolicy(RLNN):
+    def __init__(self,in_features, hidden_sizes, activation,
+                output_activation, action_space):
+        super(GaussianPolicy, self).__init__()
+
+        # self.which_one = 0
+
+        action_dim = action_space.shape[0]
+        self.action_scale = action_space.high[0]
+        self.output_activation = output_activation
+
+        self.net = MLP(
+            layers=[in_features] + list(hidden_sizes),
+            activation=activation,
+            output_activation=activation)#.to(device)
+
+        self.mu = nn.Linear(
+            in_features=list(hidden_sizes)[-1], out_features=action_dim)
+        """
+        Because this algorithm maximizes trade-off of reward and entropy,
+        entropy must be unique to state---and therefore log_stds need
+        to be a neural network output instead of a shared-across-states
+        learnable parameter vector. But for deep Relu and other nets,
+        simply sticking an activationless dense layer at the end would
+        be quite bad---at the beginning of training, a randomly initialized
+        net could produce extremely large values for the log_stds, which
+        would result in some actions being either entirely deterministic
+        or too random to come back to earth. Either of these introduces
+        numerical instability which could break the algorithm. To
+        protect against that, we'll constrain the output range of the
+        log_stds, to lie within [LOG_STD_MIN, LOG_STD_MAX]. This is
+        slightly different from the trick used by the original authors of
+        SAC---they used torch.clamp instead of squashing and rescaling.
+        I prefer this approach because it allows gradient propagation
+        through log_std where clipping wouldn't, but I don't know if
+        it makes much of a difference.
+        """
+        self.log_std = nn.Sequential(
+            nn.Linear(
+                in_features=list(hidden_sizes)[-1], out_features=action_dim),
+            nn.Tanh())
+
+    def forward(self, x):
+        output = self.net(x)
+        mu = self.mu(output)
+        if self.output_activation:
+            mu = self.output_activation(mu)
+        log_std = self.log_std(output)
+        log_std = LOG_STD_MIN + 0.5 * (LOG_STD_MAX - LOG_STD_MIN) * (
+            log_std + 1)
+
+        policy = Normal(mu, torch.exp(log_std))
+        pi = policy.rsample()  # Critical: must be rsample() and not sample()
+        logp_pi = torch.sum(policy.log_prob(pi), dim=1)
+
+        mu, pi, logp_pi = self._apply_squashing_func(mu, pi, logp_pi)
+
+        # make sure actions are in correct range
+        mu_scaled = mu * self.action_scale
+        pi_scaled = pi * self.action_scale
+
+        return pi_scaled, mu_scaled, logp_pi
+
+    def _clip_but_pass_gradient(self, x, l=-1., u=1.):
+        clip_up = (x > u).float()
+        clip_low = (x < l).float()
+        return x + ((u - x) * clip_up + (l - x) * clip_low).detach()
+
+    def _apply_squashing_func(self, mu, pi, logp_pi):
+        mu = torch.tanh(mu)
+        pi = torch.tanh(pi)
+
+        # To avoid evil machine precision error, strictly clip 1-pi**2 to [0,1] range.
+        logp_pi -= torch.sum(
+            torch.log(self._clip_but_pass_gradient(1 - pi**2, l=0, u=1) + EPS),
+            dim=1)
+
+        return mu, pi, logp_pi
+
+    def select_action(self,o,args,_eval=False): # deterministic -- eval
+        if args.evaluate_cpu:
+            pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)))
+        else:
+            pi, mu, _ = self.forward(torch.Tensor(o.reshape(1, -1)).to(device))
+        return mu.cpu().detach().numpy()[0] if _eval else pi.cpu().detach().numpy()[0]
+
+
 class Actor(RLNN):
 
     def __init__(self, state_dim, action_dim, max_action, args):
@@ -390,7 +477,8 @@ if __name__ == "__main__":
         critic_t.load_state_dict(critic.state_dict())
 
     # actor
-    actor = Actor(state_dim, action_dim, max_action, args)
+    # actor = Actor(state_dim, action_dim, max_action, args)
+    actor = GaussianPolicy(state_dim,(400, 300), torch.relu, None, env.action_space)
     actor_t = Actor(state_dim, action_dim, max_action, args)
     actor_t.load_state_dict(actor.state_dict())
 
