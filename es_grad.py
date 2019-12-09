@@ -362,13 +362,11 @@ class CriticTD3(RLNN):
     def forward(self, x, u):
 
         if not self.layer_norm:
-            print("not come here critic")
             x1 = F.leaky_relu(self.l1(torch.cat([x, u], 1)))
             x1 = F.leaky_relu(self.l2(x1))
             x1 = self.l3(x1)
 
         else:
-            print("come here in critic")
             x1 = F.leaky_relu(self.n1(self.l1(torch.cat([x, u], 1))))
             x1 = F.leaky_relu(self.n2(self.l2(x1)))
             x1 = self.l3(x1)
